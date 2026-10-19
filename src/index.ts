@@ -5,7 +5,7 @@ export type {
   Country, Condition, SortBy, SearchParams,
   Item, SearchResult, ItemDetail, Seller, CategoryHit,
 } from './client/types.js';
-export { COUNTRIES, DOMAIN, CONDITION_ID, SORT_VALUE } from './client/types.js';
+export { COUNTRIES, DOMAIN, CONDITION_ID, CONDITIONS, SORT_VALUE } from './client/types.js';
 export type { BrandHit, ItemSlim, FeedbackEntry, FeedbackResult, ColorHit, SizeEntry, SizeGroup } from './client/endpoints.js';
 export { opSearch, opSearchAll } from './ops/search.js';
 export { opGetItem } from './ops/get-item.js';

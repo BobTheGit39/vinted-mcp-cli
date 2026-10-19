@@ -18,11 +18,18 @@ export const DOMAIN: Record<Country, string> = {
 };
 
 export type Condition =
-  | 'new_with_tags' | 'new_without_tags' | 'very_good' | 'good' | 'satisfactory';
+  | 'new_with_tags' | 'new_without_tags' | 'very_good' | 'good' | 'satisfactory'
+  | 'not_fully_functional';
 
+// Maps to Vinted's `status_ids[]` catalog filter.
+// NOTE: not_fully_functional (7) was taken from a live catalog URL; it may only
+// apply to some categories (e.g. electronics).
 export const CONDITION_ID: Record<Condition, number> = {
   new_with_tags: 6, new_without_tags: 1, very_good: 2, good: 3, satisfactory: 4,
+  not_fully_functional: 7,
 };
+
+export const CONDITIONS = Object.keys(CONDITION_ID) as Condition[];
 
 export type SortBy =
   | 'relevance' | 'price_low_to_high' | 'price_high_to_low' | 'newest_first';

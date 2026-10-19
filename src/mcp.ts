@@ -8,7 +8,7 @@ import {
   GetPromptRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import { VintedClient } from './client/session.js';
-import { COUNTRIES } from './client/types.js';
+import { COUNTRIES, CONDITIONS } from './client/types.js';
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { callTool } from './dispatch.js';
 import { VERSION } from './version.js';
@@ -31,7 +31,7 @@ const TOOLS = [
         size: { type: 'array', items: { type: 'string' }, description: 'Size labels to filter by, e.g. ["M", "L"] or ["42", "43"]. Automatically resolved to IDs via resolve_size_ids. Use instead of sizeIds when you know the label but not the ID.' },
         colorIds: { type: 'array', items: { type: 'integer' }, description: 'Numeric color IDs. Prefer the color[] parameter for name-based lookup.' },
         color: { type: 'array', items: { type: 'string' }, description: 'Color names to filter by, e.g. ["black", "white"]. Automatically resolved to IDs via get_colors.' },
-        condition: { type: 'array', items: { type: 'string', enum: ['new_with_tags', 'new_without_tags', 'very_good', 'good', 'satisfactory'] }, description: 'Item condition filter; multiple values are OR-ed together' },
+        condition: { type: 'array', items: { type: 'string', enum: CONDITIONS }, description: 'Item condition filter; multiple values are OR-ed together' },
         sortBy: { type: 'string', enum: ['relevance', 'price_low_to_high', 'price_high_to_low', 'newest_first'], description: 'Sort order for results. Defaults to relevance.' },
         perPage: { type: 'integer', description: 'Results to return, 1–96. Defaults to 20. Vinted serves fixed pages of 96, so this only truncates a page; at most 960 results are reachable per query.' },
         page: { type: 'integer', description: 'Page number starting at 1' },
@@ -91,7 +91,7 @@ const TOOLS = [
         categoryId: { type: 'integer', description: 'Category ID from get_categories' },
         sizeIds: { type: 'array', items: { type: 'integer' }, description: 'Size IDs to filter by (from resolve_size_ids)' },
         colorIds: { type: 'array', items: { type: 'integer' }, description: 'Color IDs to filter by (from get_colors)' },
-        condition: { type: 'array', items: { type: 'string', enum: ['new_with_tags', 'new_without_tags', 'very_good', 'good', 'satisfactory'] }, description: 'Item condition filter' },
+        condition: { type: 'array', items: { type: 'string', enum: CONDITIONS }, description: 'Item condition filter' },
       },
       required: ['query'],
     },
@@ -137,7 +137,7 @@ const TOOLS = [
         size: { type: 'array', items: { type: 'string' }, description: 'Size labels to filter by, e.g. ["M", "L"]. Automatically resolved to IDs.' },
         colorIds: { type: 'array', items: { type: 'integer' }, description: 'Numeric color IDs. Prefer color[] for name-based lookup.' },
         color: { type: 'array', items: { type: 'string' }, description: 'Color names to filter by, e.g. ["black", "white"]. Automatically resolved to IDs.' },
-        condition: { type: 'array', items: { type: 'string', enum: ['new_with_tags', 'new_without_tags', 'very_good', 'good', 'satisfactory'] }, description: 'Item condition filter' },
+        condition: { type: 'array', items: { type: 'string', enum: CONDITIONS }, description: 'Item condition filter' },
         sortBy: { type: 'string', enum: ['relevance', 'price_low_to_high', 'price_high_to_low', 'newest_first'], description: 'Sort order' },
         maxItems: { type: 'integer', default: 200, description: 'Maximum total items to collect across all pages (default 200, max 1000)' },
         maxPages: { type: 'integer', default: 10, description: 'Maximum number of pages to fetch regardless of maxItems' },
@@ -222,7 +222,7 @@ const TOOLS = [
         colorIds: { type: 'array', items: { type: 'integer' }, description: 'Color IDs to filter by' },
         priceMin: { type: 'number', description: 'Minimum price in local currency' },
         priceMax: { type: 'number', description: 'Maximum price in local currency' },
-        condition: { type: 'array', items: { type: 'string', enum: ['new_with_tags', 'new_without_tags', 'very_good', 'good', 'satisfactory'] }, description: 'Item condition filter' },
+        condition: { type: 'array', items: { type: 'string', enum: CONDITIONS }, description: 'Item condition filter' },
       },
       required: ['query'],
     },

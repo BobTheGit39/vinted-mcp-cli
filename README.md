@@ -157,7 +157,7 @@ vinted size-groups --output table
 | `--size-ids <ids>` | Comma-separated size IDs (`vinted sizes M L` to resolve) |
 | `--color-ids <ids>` | Comma-separated color IDs (`vinted colors` to browse) |
 | `--color <names>` | Color names (auto-resolved to IDs, e.g. `--color black,white`) |
-| `--condition <list>` | `new_with_tags`, `new_without_tags`, `very_good`, `good`, `satisfactory` |
+| `--condition <list>` | `new_with_tags`, `new_without_tags`, `very_good`, `good`, `satisfactory`, `not_fully_functional` |
 | `--sort <s>` | `relevance`, `price_low_to_high`, `price_high_to_low`, `newest_first` |
 | `--all` | Walk pages and collect all results |
 | `--max-items <n>` | Cap for `--all` (default 1000) |

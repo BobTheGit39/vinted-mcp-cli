@@ -61,6 +61,13 @@ test('searchItems maps catalog entries + builds web catalog query', async () => 
   assert.deepEqual(q.getAll('status_ids[]'), ['3']);
 });
 
+test('searchItems sends status_ids[] for multiple conditions incl. not_fully_functional', async () => {
+  const c = new CatalogClient(() => catalogHtml([catalogEntry({ id: 1 })]));
+  await searchItems(c, { query: 'iphone', condition: ['satisfactory', 'not_fully_functional'] });
+  const q = new URLSearchParams(c.calls[0].path.split('?')[1]);
+  assert.deepEqual(q.getAll('status_ids[]'), ['4', '7']);
+});
+
 test('searchItems truncates to perPage (Vinted pages are fixed at 96)', async () => {
   const entries = Array.from({ length: 10 }, (_, i) => catalogEntry({ id: i + 1 }));
   const c = new CatalogClient(() => catalogHtml(entries));
