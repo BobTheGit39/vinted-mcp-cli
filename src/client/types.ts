@@ -101,4 +101,6 @@ export interface CategoryHit {
   title: string;
   parentId?: number;
   itemCount?: number;
+  /** Full breadcrumb, e.g. "Electronics > Laptops". */
+  path?: string;
 }

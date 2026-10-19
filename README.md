@@ -71,6 +71,9 @@ vinted search "adidas samba" \
   --condition new_with_tags,very_good \
   --output table
 
+# Restrict to a category by name (or "Parent > Child" path), e.g. broken laptops
+vinted search "macbook" --category "Electronics > Laptops" --condition not_fully_functional
+
 # Watch for new listings every 30s (minimum 5)
 vinted search "air jordan 1" --watch 30
 
@@ -153,6 +156,7 @@ vinted size-groups --output table
 | `--brand <names>` | Brand names (auto-resolved to IDs) |
 | `--brand-ids <ids>` | Comma-separated brand IDs |
 | `--category-id <n>` | Category ID (`vinted categories` to browse) |
+| `--category <name>` | Category name or `Parent > Child` path, resolved to an ID (errors if ambiguous; `--category-id` wins) |
 | `--size <labels>` | Size labels (auto-resolved to IDs, e.g. `--size M,L` or `--size 42,43`) |
 | `--size-ids <ids>` | Comma-separated size IDs (`vinted sizes M L` to resolve) |
 | `--color-ids <ids>` | Comma-separated color IDs (`vinted colors` to browse) |
@@ -212,7 +216,7 @@ claude mcp add vinted -- npx -y -p @googlarz/vinted-client vinted-mcp
 | `compare_prices` | Multi-country price stats (median, mean, stdDev, min, max) with filters |
 | `get_trending` | Trending / newest listings |
 | `search_brands` | Brand lookup — returns IDs for use in filters |
-| `get_categories` | Category tree — returns IDs for use in filters |
+| `get_categories` | Category tree — returns IDs and `Parent > Child` paths for use in filters (`search_items` etc. also accept `category` by name) |
 | `get_colors` | All color options with hex codes and IDs |
 | `get_size_groups` | All size groups with IDs (Women's, Men's, Shoes, Kids…) |
 | `resolve_size_ids` | Resolve size labels ("M", "42", "XL") to numeric filter IDs |

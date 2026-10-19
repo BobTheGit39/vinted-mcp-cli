@@ -8,7 +8,7 @@ import { opGetSeller } from './ops/get-seller.js';
 import { opCompare } from './ops/compare.js';
 import { opTrending } from './ops/trending.js';
 import { opBrands, resolveBrandIds } from './ops/brands.js';
-import { opCategories } from './ops/categories.js';
+import { opCategories, resolveCategoryId } from './ops/categories.js';
 import { opSellerItems } from './ops/seller-items.js';
 import { opGetSellerFeedback } from './ops/get-seller-feedback.js';
 import { opGetColors, resolveColorIds } from './ops/get-colors.js';
@@ -21,6 +21,16 @@ type OutputFormat = 'json' | 'table';
 
 function client(opts: { proxy?: string; cache?: boolean }) {
   return new VintedClient({ proxyUrl: opts.proxy, cacheTtlMs: opts.cache === false ? 0 : undefined });
+}
+
+/** --category-id wins; otherwise resolve --category (name or "Parent > Child" path) to an ID. */
+async function categoryIdFrom(
+  c: VintedClient,
+  o: { categoryId?: number; category?: string },
+  country: Country,
+): Promise<number | undefined> {
+  if (o.categoryId !== undefined || !o.category?.trim()) return o.categoryId;
+  return (await resolveCategoryId(c, o.category, country)).id;
 }
 
 function out(x: unknown, fmt: OutputFormat = 'json') {
@@ -55,6 +65,7 @@ program
   .option('--brand-ids <ids>', 'comma-separated brand IDs', (v) => parseList<string>(v).map(Number))
   .option('--brand <names>', 'comma-separated brand names (resolved to IDs via Vinted lookup)')
   .option('--category-id <n>', 'category ID', (v) => Number(v))
+  .option('--category <name>', 'category name or path, e.g. "laptops" or "Electronics > Laptops" (resolved to an ID; --category-id wins)')
   .option('--size-ids <ids>', 'comma-separated size IDs', (v) => parseList<string>(v).map(Number))
   .option('--size <labels>', 'comma-separated size labels (auto-resolved to IDs, e.g. "M,L,XL" or "42,43")')
   .option('--color-ids <ids>', 'comma-separated color IDs', (v) => parseList<string>(v).map(Number))
@@ -105,7 +116,7 @@ program
         priceMin: o.priceMin,
         priceMax: o.priceMax,
         brandIds,
-        categoryId: o.categoryId,
+        categoryId: await categoryIdFrom(c, o, o.country as Country),
         sizeIds,
         colorIds,
         condition: o.condition,
@@ -200,6 +211,7 @@ program
   .option('--brand-ids <ids>', 'comma-separated brand IDs', (v) => parseList<string>(v).map(Number))
   .option('--brand <names>', 'comma-separated brand names (resolved to IDs)')
   .option('--category-id <n>', 'category ID', (v) => Number(v))
+  .option('--category <name>', 'category name or path, e.g. "laptops" or "Electronics > Laptops" (resolved to an ID; --category-id wins)')
   .option('--size-ids <ids>', 'comma-separated size IDs', (v) => parseList<string>(v).map(Number))
   .option('--size <labels>', 'comma-separated size labels (auto-resolved to IDs, e.g. "M,L" or "42,43")')
   .option('--color-ids <ids>', 'comma-separated color IDs', (v) => parseList<string>(v).map(Number))
@@ -233,7 +245,7 @@ program
         countries,
         limit: o.limit,
         brandIds,
-        categoryId: o.categoryId,
+        categoryId: await categoryIdFrom(c, o, (countries[0] ?? 'fr') as Country),
         sizeIds,
         colorIds,
         condition: o.condition,
@@ -286,13 +298,15 @@ program
   .description('Trending / newest items')
   .addOption(new Option('-c, --country <cc>', 'country code').choices(COUNTRIES).default('fr'))
   .option('--category-id <n>', 'category ID', (v) => Number(v))
+  .option('--category <name>', 'category name or path, e.g. "laptops" or "Electronics > Laptops" (resolved to an ID; --category-id wins)')
   .option('-l, --limit <n>', 'max items', (v) => Number(v), 20)
   .action(async (o, cmd) => {
     try {
       const g = cmd.optsWithGlobals();
-      const r = await opTrending(client(g), {
+      const c = client(g);
+      const r = await opTrending(c, {
         country: o.country as Country,
-        categoryId: o.categoryId,
+        categoryId: await categoryIdFrom(c, o, o.country as Country),
         limit: o.limit,
       });
       out(r, g.output);

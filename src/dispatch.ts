@@ -6,7 +6,7 @@ import { opGetSeller } from './ops/get-seller.js';
 import { opCompare } from './ops/compare.js';
 import { opTrending } from './ops/trending.js';
 import { opBrands, resolveBrandIds } from './ops/brands.js';
-import { opCategories } from './ops/categories.js';
+import { opCategories, resolveCategoryId } from './ops/categories.js';
 import { opSellerItems } from './ops/seller-items.js';
 import { opGetSellerFeedback } from './ops/get-seller-feedback.js';
 import { opGetColors, resolveColorIds } from './ops/get-colors.js';
@@ -30,6 +30,15 @@ function list(v: unknown): string[] {
 /** Turn brand/size/color names into IDs. An unresolvable filter is an error: running unfiltered would mislead. */
 async function resolveFilters(c: VintedClient, args: Args, country: Country): Promise<string[]> {
   const warnings: string[] = [];
+  // Category is a single name or breadcrumb, not a list; an explicit categoryId wins.
+  const category = args.category;
+  delete args.category;
+  if (category !== undefined) {
+    if (typeof category !== 'string') throw new Error('category must be a string, e.g. "Electronics > Laptops"');
+    if (category.trim() && args.categoryId === undefined) {
+      args.categoryId = (await resolveCategoryId(c, category, country)).id;
+    }
+  }
   const apply = async (
     key: 'brand' | 'size' | 'color',
     idsKey: 'brandIds' | 'sizeIds' | 'colorIds',
