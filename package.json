@@ -33,6 +33,7 @@
     "mcp": "node dist/mcp.js",
     "test": "npm run build && node --test test/*.test.mjs",
     "test:integration": "INTEGRATION=1 node --test test/integration.test.mjs",
+    "prepare": "npm run build",
     "prepublishOnly": "npm run clean && npm run build"
   },
   "dependencies": {
