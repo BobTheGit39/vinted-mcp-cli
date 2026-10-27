@@ -56,6 +56,25 @@ export async function getItem(
   }
 }
 
+/**
+ * Explain an item page that has no product data (typically a sold or removed
+ * listing): HTTP status, page title, and any sold/closed/reserved fields found
+ * in the embedded page data. Diagnostic text only; it never decides anything.
+ */
+export function describeUnreadableItemPage(status: number, body: string): string {
+  const parts = [`HTTP ${status}`];
+  const title = body.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.replace(/\s+/g, ' ').trim();
+  if (title) parts.push(`title "${title.slice(0, 120)}"`);
+  const signals = new Map<string, string>();
+  const re = /\\?"([A-Za-z0-9_]*(?:sold|clos|reserv)[A-Za-z0-9_]*)\\?"\s*:\s*(true|false|null|-?\d+|\\?"[^"\\]{0,40}\\?")/gi;
+  for (const m of body.matchAll(re)) {
+    if (signals.size >= 8) break;
+    if (!signals.has(m[1])) signals.set(m[1], m[2].replace(/\\?"/g, ''));
+  }
+  if (signals.size) parts.push(`page data: ${[...signals].map(([k, v]) => `${k}=${v}`).join(', ')}`);
+  return parts.join(', ');
+}
+
 async function getItemFromHtml(
   client: VintedClient,
   itemId: number,
@@ -69,7 +88,7 @@ async function getItemFromHtml(
     throw new Error(`Item ${itemId}: API failed (${apiMsg}); HTML fallback returned ${status}.`);
   }
   const ldMatch = body.match(/<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/);
-  if (!ldMatch) throw new Error(`Item ${itemId}: no JSON-LD on page`);
+  if (!ldMatch) throw new Error(`Item ${itemId}: no JSON-LD on page (${describeUnreadableItemPage(status, body)})`);
   const ld = JSON.parse(ldMatch[1]);
 
   // Scrape seller id + username from member links in HTML
@@ -96,6 +115,7 @@ async function getItemFromHtml(
     brand: ld.brand?.name,
     condition: ld.offers?.itemCondition?.replace(/.*\//, '').replace(/Condition$/, ''),
     description: ld.description,
+    availability: ld.offers?.availability?.replace(/.*\//, ''),
     photos: ld.image ? (Array.isArray(ld.image) ? ld.image : [ld.image]) : [],
     url: ld.offers?.url ?? url,
     seller: { id: sellerId, username: sellerUsername },

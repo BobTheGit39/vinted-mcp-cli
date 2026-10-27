@@ -82,6 +82,8 @@ export interface ItemDetail extends Item {
   description?: string;
   photos: string[];
   createdAt?: string;
+  /** schema.org availability from the item page, e.g. "InStock" (only set by the HTML fallback). */
+  availability?: string;
   raw?: unknown;
 }
 
